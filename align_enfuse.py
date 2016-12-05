@@ -14,12 +14,11 @@ jpgquality = 92
 
 root = Tk()
 
-filelist = () 
-
 numfiles = StringVar()
 numfiles.set("0")
 
 def run():
+  filelist = treeview.get_children()
   call(["align_image_stack", "-v", "-C", "-aalign"] + list(filelist))
   alignfilelist = []
   for element in range(len(filelist)):
@@ -29,24 +28,43 @@ def run():
   call(["rm",outname.replace("jpg","tif")]+alignfilelist)
 
 def selectfiles():
-  global filelist
   filelist = filedialog.askopenfilenames(initialdir=os.getenv("PWD"))
+  for filen in filelist:
+    itemname = filen.split("/")[-1]
+    if not treeview.exists(filen):
+      treeview.insert('','end',filen,text=itemname)
+  updatenumfiles()
+
+def removefiles():
+  for item in treeview.selection():
+    treeview.delete(item)
+  updatenumfiles()
+
+def updatenumfiles():
+  filelist = treeview.get_children()
   numfiles.set(str(len(filelist)))
   if int(len(filelist)) > 1:
     runButton.state(['!disabled'])
   else:
     runButton.state(['disabled'])
 
-ttk.Label(root, textvariable=numfiles).grid(column=1,row=2)
-ttk.Label(root, text="files selected").grid(column=2,row=2)
+ttk.Label(root, text="Select at least 2 image files").grid(row=0,columnspan=2)
 
-loadButton = ttk.Button(root, text="Select Files", command=selectfiles)
-loadButton.grid(column=1,row=2)
+loadButton = ttk.Button(root, text="Add Files", command=selectfiles)
+loadButton.grid(column=0,row=2)
 
-runButton = ttk.Button(root, text="Do Something", command=run,state='disabled')
-runButton.grid(column=2,row=3)
+deleteButton = ttk.Button(root, text="Remove Selected", command=removefiles)
+deleteButton.grid(column=1,row=2)
 
 treeview = ttk.Treeview(root)
-treeview.grid(column=1, row=1)
+treeview.grid(columnspan=2, row=1)
+treeview.heading("#0",text="Selected files")
+
+ttk.Label(root, textvariable=numfiles).grid(column=0,row=3)
+ttk.Label(root, text="files selected").grid(column=1,row=3)
+
+
+runButton = ttk.Button(root, text="Do Something", command=run,state='disabled')
+runButton.grid(columnspan=2,row=4)
 
 root.mainloop()
