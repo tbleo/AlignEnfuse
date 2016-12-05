@@ -5,6 +5,7 @@ from subprocess import call
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
+from tkinter import messagebox
 
 expw = 1.0
 satw = 0.2
@@ -19,6 +20,10 @@ numfiles.set("0")
 
 def run():
   filelist = treeview.get_children()
+  for filen in filelist:
+    if not ("jpg" in filen or "jpeg" in filen):
+      messagebox.showerror("Filetype","Cannot process file %s. Please provide only jpg image files." % filen.split("/")[-1])
+      return
   call(["align_image_stack", "-v", "-C", "-aalign"] + list(filelist))
   alignfilelist = []
   for element in range(len(filelist)):
